@@ -1,11 +1,11 @@
 import csv
-from enum import Enum
 
 import numpy as np
 
 from forms.exceptions import (
     ImproperFormatException,
-    InconsistentAppStateException
+    InconsistentAppStateException,
+    QuestionsEnded
 )
 
 
@@ -15,13 +15,19 @@ class AppState:
     answer_list = []  # type: list
     answer_set_stats = {}  # type: dict
 
-    current_question = None  # type: str
+    current_question = None
     current_answer_set = {}  # type: dict
 
     def __init__(self, location):
-        self.chance = None
-        self.progress = None
+        self.chance = 100
+        self.progress = 0
         self.file_location = location
+
+    def load_data(self):
+        """
+        Interface for loading data.
+        :return:
+        """
         self._load_data(self.file_location)
 
     def get_next_question(self) -> str:
@@ -30,6 +36,9 @@ class AppState:
 
         :return:
         """
+        if not self.current_question:
+            self._set_question()
+
         return self.current_question
 
     def get_chance(self) -> int:
@@ -37,7 +46,8 @@ class AppState:
         Returns chance of current candidate to fit our profile
         :return:
         """
-        self._get_chance()
+        self._calculate_chance()
+
         return self.chance
 
     def get_progress(self) -> int:
@@ -71,14 +81,14 @@ class AppState:
         """
         self._mark_no_answer()
 
-    def save_dataset(self):
+    def save_dataset(self, filename):
         """
         Handler for saving data with current poll to dataset
         :return:
         """
-        pass
+        self._save_data(filename)
 
-    def _calculate_stats(self):
+    def _calculate_initial_stats(self):
         """
         Calculates stats for provided dataset and sets initial parameters for
         current answers set.
@@ -99,40 +109,90 @@ class AppState:
             key_count = 0
 
             for element in self.answer_list:
-                if element.get(key) == "T":
+                if element.get(key) == "F":
                     key_count = key_count + 1
 
             self.answer_set_stats[key] = key_count
-            self.current_answer_set[key] = None
-            self._get_chance()
+            self.current_answer_set[key] = "-"
+            self._calculate_chance()
             self._update_progress()
 
     def _update_progress(self):
-        pass
 
-    def _get_chance(self):
-        pass
+        answered_count = 0
+
+        for key in self.current_answer_set.keys():
+            if not self.current_answer_set[key] == '-':
+                answered_count = answered_count + 1
+
+        if answered_count == 0:
+            self.progress = 0
+        else:
+            self.progress = float(float(answered_count) / len(
+                self.current_answer_set.keys())) * 100
 
     def _mark_true(self):
         """
         Private method containing logic for marking questions.
         :return:
         """
+        self.current_answer_set[self.current_question] = "T"
+        self.current_question = None
 
-    def _save_data(self):
+    def _save_data(self, filename):
         """
         Saves data on finish of the poll
 
         :return: None
         """
-        pass
+        fieldnames = self.current_answer_set.keys()
 
-    def _calculate_chance(self) -> int:
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+            for element in self.answer_list:
+                writer.writerow(element)
+
+            writer.writerow(self.current_answer_set)
+
+    def _calculate_chance(self):
         """
         Calculates and returns probability of our candidate to fit our profile.
 
         :return:
         """
+
+        count_answered_false = 0
+        num_keys_unanswered = 0
+
+        for key in self.current_answer_set.keys():
+            if self.current_answer_set[key] == '-':
+                count_answered_false = (count_answered_false
+                                        + self.answer_set_stats[key])
+                num_keys_unanswered = num_keys_unanswered + 1
+
+        if not num_keys_unanswered == 0:
+            self.chance = int(count_answered_false / (
+                    len(self.answer_list) * num_keys_unanswered) * 100)
+        else:
+            self.chance = 100
+            self.progress = 100
+
+    def _set_question(self):
+        """
+        Sets random possible question.
+        :return:
+        """
+
+        possible_questions = []
+        for key in self.current_answer_set.keys():
+            if self.current_answer_set[key] == "-":
+                possible_questions.append(key)
+
+        if possible_questions:
+            self.current_question = np.random.choice(possible_questions)
+        else:
+            raise QuestionsEnded
 
     def _load_data(self, location):
         """
@@ -150,21 +210,20 @@ class AppState:
         except csv.Error:
             raise ImproperFormatException
 
-        self._calculate_stats()
+        self._calculate_initial_stats()
 
     def _mark_false(self):
         """
         Private method containing logic for marking questions.
         :return:
         """
-        pass
+        self.current_answer_set[self.current_question] = "F"
+        self.current_question = None
 
     def _mark_no_answer(self):
         """
-        Private method conatining logic for marking questions.
+        Private method containing logic for marking questions.
         :return:
         """
-        pass
-
-    def _set_question(self):
-        pass
+        self.current_answer_set[self.current_question] = "U"
+        self.current_question = None

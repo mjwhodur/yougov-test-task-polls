@@ -107,6 +107,7 @@ class MainWindow(QWidget):
             if not self.appstate:
                 try:
                     appstate = AppState(filename)
+                    appstate.load_data()
 
                 except ImproperFormatException:
                     QMessageBox.about(
@@ -191,7 +192,6 @@ class MainWindow(QWidget):
             chance = self.appstate.get_chance()
             progress = self.appstate.get_progress()
             question = self.appstate.get_next_question()
-
             self.question_text.setText(
                 question
             )
@@ -216,7 +216,8 @@ class MainWindow(QWidget):
                 "QFileDialog.getSaveFileName()", "", "CSV Files (*.csv)",
                 options=options
             )
-            self.appstate.save_dataset()
+            self.appstate.save_dataset(filename)
+            self.close()
 
         except QuestionAnsweredFalsely:
             self.question_text.setText(
