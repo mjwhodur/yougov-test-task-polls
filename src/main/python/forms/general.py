@@ -213,10 +213,12 @@ class MainWindow(QWidget):
             options |= QFileDialog.DontUseNativeDialog
             filename, _ = QFileDialog.getSaveFileName(
                 self,
-                "QFileDialog.getSaveFileName()", "", "CSV Files (*.csv)",
+                "Save dataset", "", "CSV Files (*.csv)",
                 options=options
             )
-            self.appstate.save_dataset(filename)
+            if filename:
+                self.appstate.save_dataset(filename)
+
             self.close()
 
         except QuestionAnsweredFalsely:

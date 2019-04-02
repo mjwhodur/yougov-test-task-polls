@@ -18,6 +18,8 @@ class AppState:
     current_question = None
     current_answer_set = {}  # type: dict
 
+    _ever_clicked_not_false = False
+
     def __init__(self, location):
         self.chance = 100
         self.progress = 0
@@ -118,6 +120,10 @@ class AppState:
             self._update_progress()
 
     def _update_progress(self):
+        """
+        Private method for calculating current progress in percents
+        :return:
+        """
 
         answered_count = 0
 
@@ -136,6 +142,7 @@ class AppState:
         Private method containing logic for marking questions.
         :return:
         """
+        self._ever_clicked_not_false = True
         self.current_answer_set[self.current_question] = "T"
         self.current_question = None
 
@@ -161,6 +168,9 @@ class AppState:
 
         :return:
         """
+        if self._ever_clicked_not_false:
+            self.chance = 0
+            return
 
         count_answered_false = 0
         num_keys_unanswered = 0
@@ -225,5 +235,6 @@ class AppState:
         Private method containing logic for marking questions.
         :return:
         """
+        self._ever_clicked_not_false = True
         self.current_answer_set[self.current_question] = "U"
         self.current_question = None
