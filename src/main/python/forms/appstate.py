@@ -152,15 +152,23 @@ class AppState:
 
         :return: None
         """
-        fieldnames = self.current_answer_set.keys()
+        if not filename:
+            return
+        try:
+            fieldnames = self.current_answer_set.keys()
 
-        with open(filename, 'w', newline='') as csvfile:
-            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
-            writer.writeheader()
-            for element in self.answer_list:
-                writer.writerow(element)
+            with open(filename, 'w', newline='') as csvfile:
+                writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+                writer.writeheader()
+                for element in self.answer_list:
+                    writer.writerow(element)
 
-            writer.writerow(self.current_answer_set)
+                writer.writerow(self.current_answer_set)
+
+        except IOError:
+            pass
+
+
 
     def _calculate_chance(self):
         """
@@ -218,6 +226,10 @@ class AppState:
                     self.answer_list.append(row)
 
         except csv.Error:
+            raise ImproperFormatException
+        except FileNotFoundError:
+            raise ImproperFormatException
+        except IOError:
             raise ImproperFormatException
 
         self._calculate_initial_stats()
