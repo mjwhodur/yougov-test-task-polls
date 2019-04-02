@@ -18,7 +18,8 @@ from forms.appstate import AppState
 from forms.exceptions import (
     QuestionsEnded,
     QuestionAnsweredFalsely,
-    QuestionUnanswered
+    QuestionUnanswered,
+    ImproperFormatException
 )
 
 
@@ -104,7 +105,21 @@ class MainWindow(QWidget):
         if filename:
 
             if not self.appstate:
-                self.appstate = AppState(filename)
+                try:
+                    appstate = AppState(filename)
+                    appstate.load_data()
+
+                except ImproperFormatException:
+                    QMessageBox.about(
+                        self,
+                        "Dataset error",
+                        "We have discovered that "
+                        "the dataset format is improper. Use CSV format or"
+                        " check if the file format is proper and try again."
+                    )
+
+                else:
+                    self.appstate = appstate
             else:
 
                 buttonReply = QMessageBox.question(
@@ -117,6 +132,8 @@ class MainWindow(QWidget):
                     self.appstate = AppState(filename)
                 else:
                     pass
+
+            self.set_layout_for_next_question()
 
     def click_true(self):
         """
@@ -175,6 +192,11 @@ class MainWindow(QWidget):
             chance = self.appstate.get_chance()
             progress = self.appstate.get_progress()
             question = self.appstate.get_next_question()
+            self.question_text.setText(
+                question
+            )
+            self.pb_questions.setValue(progress)
+            self.pb_suitability.setValue(chance)
 
         except QuestionsEnded:
             self.question_text.setText(
@@ -191,10 +213,18 @@ class MainWindow(QWidget):
             options |= QFileDialog.DontUseNativeDialog
             filename, _ = QFileDialog.getSaveFileName(
                 self,
-                "QFileDialog.getSaveFileName()", "", "CSV Files (*.csv)",
+                "Save dataset", "", "CSV Files (*.csv)",
                 options=options
             )
-            self.appstate.save_dataset()
+            if filename:
+                self.appstate.save_dataset(filename)
+
+            self.question_text.setText(
+                "Poll has ended. "
+                "This poll has ended."
+            )
+
+            self.close()
 
         except QuestionAnsweredFalsely:
             self.question_text.setText(
@@ -207,11 +237,3 @@ class MainWindow(QWidget):
                 "You have not answered to one or more questions. "
                 "Poll cannot continue."
             )
-
-        else:
-            self.question_text.setText(
-                question
-            )
-
-            self.pb_questions.setValue(progress)
-            self.pb_suitability.setValue(chance)
