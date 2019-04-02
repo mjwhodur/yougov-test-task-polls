@@ -1,30 +1,59 @@
-# -*- coding: utf-8 -*-
+"""
+    Module forms.general
 
-# Form implementation generated from reading ui file 'MainForm.ui'
-#
-# Created by: PyQt5 UI code generator 5.12.1
-#
-# WARNING! All changes made in this file will be lost!
-from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, \
-    QHBoxLayout, QProgressBar, QLayout, QVBoxLayout
+    Contains classes for handling interaction between user and GUI
+"""
+from PyQt5.QtWidgets import (
+    QWidget,
+    QGridLayout,
+    QLabel,
+    QPushButton,
+    QHBoxLayout,
+    QProgressBar,
+    QLayout,
+    QVBoxLayout,
+    QFileDialog, QMessageBox)
+
+from forms.appstate import AppState
+from forms.exceptions import (
+    QuestionsEnded,
+    QuestionAnsweredFalsely,
+    QuestionUnanswered
+)
 
 
 class MainWindow(QWidget):
+    """
+        Main class for Form of our application. Handles input and output
+    """
+    appstate = None
 
     def __init__(self, parent=None):
         super().__init__()
         self.interface_builder()
 
-    def interface_builder(self):
+    def interface_builder(self) -> None:
+        """
+        Creates main window interface
+        :return: None
+        """
         app_grid = QGridLayout()
 
         question_label = QLabel("Question: ", self)
-        question_text = QLabel("MainWindow.question_text", self)
+
+        self.question_text = QLabel("Load dataset first.", self)
 
         true_button = QPushButton("True", self)
+        true_button.clicked.connect(self.click_true)
+
         false_button = QPushButton("False", self)
+        false_button.clicked.connect(self.click_false)
+
         wont_answer_button = QPushButton("Won't answer", self)
+        wont_answer_button.clicked.connect(self.click_no_answer)
+
         load_questions_data = QPushButton("Load question data")
+        load_questions_data.clicked.connect(self.load_questions_data_click)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(true_button)
@@ -34,14 +63,18 @@ class MainWindow(QWidget):
 
         question_layout = QHBoxLayout()
         question_layout.addWidget(question_label)
-        question_layout.addWidget(question_text)
+        question_layout.addWidget(self.question_text)
 
-        pb_suitability = QProgressBar()
-        pb_questions = QProgressBar()
+        self.pb_suitability = QProgressBar()
+        self.pb_questions = QProgressBar()
+        self.pb_questions.setValue(0)
+        self.pb_suitability.setValue(0)
 
         pb_layout = QVBoxLayout()
-        pb_layout.addWidget(pb_suitability)
-        pb_layout.addWidget(pb_questions)
+        pb_layout.addWidget(self.pb_suitability)
+        pb_layout.addWidget(QLabel("Chance"))
+        pb_layout.addWidget(self.pb_questions)
+        pb_layout.addWidget(QLabel("Progress"))
 
         app_grid.addItem(question_layout, 0, 0)
         app_grid.addItem(pb_layout, 1, 0)
@@ -55,14 +88,130 @@ class MainWindow(QWidget):
         )
         self.show()
 
-        def load_questions_data_click():
-            pass
+    def load_questions_data_click(self):
+        """
+        Handler for Load Questions Data button
+        :return: None
+        """
 
-        def click_true():
-            pass
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filename, _ = QFileDialog.getOpenFileName(
+            self,
+            "QFileDialog.getOpenFileName()", "", "CSV Files (*.csv)",
+            options=options
+        )
+        if filename:
 
-        def click_false():
-            pass
+            if not self.appstate:
+                self.appstate = AppState(filename)
+            else:
 
-        def click_no_answer():
-            pass
+                buttonReply = QMessageBox.question(
+                    self, 'Polls', "Are you sure to discard all data?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+
+                if buttonReply == QMessageBox.Yes:
+                    self.appstate = AppState(filename)
+                else:
+                    pass
+
+    def click_true(self):
+        """
+        Handler for click event of True button
+        :return: None
+        """
+
+        if self.appstate:
+            self.appstate.mark_true()
+            self.set_layout_for_next_question()
+        else:
+            QMessageBox.about(
+                self,
+                "Error",
+                "You'll need to provide dataset first."
+            )
+
+    def click_false(self):
+        """
+        Handler for click event of False button
+        :return: None
+        """
+        if self.appstate:
+            self.appstate.mark_false()
+            self.set_layout_for_next_question()
+        else:
+            QMessageBox.about(
+                self,
+                "Error",
+                "You'll need to provide dataset first."
+            )
+
+    def click_no_answer(self):
+        """
+        Handler for click event of "no answer" button.
+        :return:
+        """
+        if self.appstate:
+            self.appstate.mark_no_answer()
+            self.set_layout_for_next_question()
+        else:
+            QMessageBox.about(
+                self,
+                "Error",
+                "You'll need to provide dataset first."
+            )
+
+    def load_data(self):
+        """
+        handler of data loading for AppState class
+        :return:
+        """
+
+    def set_layout_for_next_question(self):
+        try:
+            chance = self.appstate.get_chance()
+            progress = self.appstate.get_progress()
+            question = self.appstate.get_next_question()
+
+        except QuestionsEnded:
+            self.question_text.setText(
+                "All questions have been answered."
+            )
+
+            QMessageBox.about(
+                self,
+                "All questions answered.",
+                "You need to provide dataset filename to save."
+            )
+
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            filename, _ = QFileDialog.getSaveFileName(
+                self,
+                "QFileDialog.getSaveFileName()", "", "CSV Files (*.csv)",
+                options=options
+            )
+            self.appstate.save_dataset()
+
+        except QuestionAnsweredFalsely:
+            self.question_text.setText(
+                "You have answered false to one or more questions. "
+                "Poll cannot continue."
+            )
+
+        except QuestionUnanswered:
+            self.question_text.setText(
+                "You have not answered to one or more questions. "
+                "Poll cannot continue."
+            )
+
+        else:
+            self.question_text.setText(
+                question
+            )
+
+            self.pb_questions.setValue(progress)
+            self.pb_suitability.setValue(chance)
