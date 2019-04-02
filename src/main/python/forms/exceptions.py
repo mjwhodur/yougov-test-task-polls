@@ -1,10 +1,17 @@
 class QuestionsEnded(Exception):
-    pass
+    """
+        Raised when there are no more questions left for our candidate.
+    """
+
 
 
 class QuestionAnsweredFalsely(Exception):
-    pass
+    """
+        Raised when our candidate answered falsely.
+    """
 
 
 class QuestionUnanswered(Exception):
-    pass
+    """
+        Raised when our candidate did not answer the question.
+    """

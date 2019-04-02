@@ -1,10 +1,8 @@
-# -*- coding: utf-8 -*-
+"""
+    Module forms.general
 
-# Form implementation generated from reading ui file 'MainForm.ui'
-#
-# Created by: PyQt5 UI code generator 5.12.1
-#
-# WARNING! All changes made in this file will be lost!
+    Contains classes for handling interaction between user and GUI
+"""
 from PyQt5.QtWidgets import (
     QWidget,
     QGridLayout,
@@ -13,9 +11,10 @@ from PyQt5.QtWidgets import (
     QHBoxLayout,
     QProgressBar,
     QLayout,
-    QVBoxLayout
-)
+    QVBoxLayout,
+    QFileDialog, QMessageBox)
 
+from forms.appstate import AppState
 from forms.exceptions import (
     QuestionsEnded,
     QuestionAnsweredFalsely,
@@ -42,7 +41,7 @@ class MainWindow(QWidget):
 
         question_label = QLabel("Question: ", self)
 
-        self.question_text = QLabel("MainWindow.question_text", self)
+        self.question_text = QLabel("Load dataset first.", self)
 
         true_button = QPushButton("True", self)
         true_button.clicked.connect(self.click_true)
@@ -54,7 +53,7 @@ class MainWindow(QWidget):
         wont_answer_button.clicked.connect(self.click_no_answer)
 
         load_questions_data = QPushButton("Load question data")
-        load_questions_data.clicked.connect(self.click_no_answer)
+        load_questions_data.clicked.connect(self.load_questions_data_click)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(true_button)
@@ -66,12 +65,16 @@ class MainWindow(QWidget):
         question_layout.addWidget(question_label)
         question_layout.addWidget(self.question_text)
 
-        pb_suitability = QProgressBar()
-        pb_questions = QProgressBar()
+        self.pb_suitability = QProgressBar()
+        self.pb_questions = QProgressBar()
+        self.pb_questions.setValue(0)
+        self.pb_suitability.setValue(0)
 
         pb_layout = QVBoxLayout()
-        pb_layout.addWidget(pb_suitability)
-        pb_layout.addWidget(pb_questions)
+        pb_layout.addWidget(self.pb_suitability)
+        pb_layout.addWidget(QLabel("Chance"))
+        pb_layout.addWidget(self.pb_questions)
+        pb_layout.addWidget(QLabel("Progress"))
 
         app_grid.addItem(question_layout, 0, 0)
         app_grid.addItem(pb_layout, 1, 0)
@@ -91,10 +94,29 @@ class MainWindow(QWidget):
         :return: None
         """
 
-        if not self.appstate:
-            self.appstate = AppState()
-        else:
-            pass
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        filename, _ = QFileDialog.getOpenFileName(
+            self,
+            "QFileDialog.getOpenFileName()", "", "CSV Files (*.csv)",
+            options=options
+        )
+        if filename:
+
+            if not self.appstate:
+                self.appstate = AppState(filename)
+            else:
+
+                buttonReply = QMessageBox.question(
+                    self, 'Polls', "Are you sure to discard all data?",
+                    QMessageBox.Yes | QMessageBox.No,
+                    QMessageBox.No
+                )
+
+                if buttonReply == QMessageBox.Yes:
+                    self.appstate = AppState(filename)
+                else:
+                    pass
 
     def click_true(self):
         """
@@ -105,20 +127,42 @@ class MainWindow(QWidget):
         if self.appstate:
             self.appstate.mark_true()
             self.set_layout_for_next_question()
+        else:
+            QMessageBox.about(
+                self,
+                "Error",
+                "You'll need to provide dataset first."
+            )
 
     def click_false(self):
         """
         Handler for click event of False button
         :return: None
         """
-        self.appstate.mark_false()
-        self.set_layout_for_next_question()
+        if self.appstate:
+            self.appstate.mark_false()
+            self.set_layout_for_next_question()
+        else:
+            QMessageBox.about(
+                self,
+                "Error",
+                "You'll need to provide dataset first."
+            )
 
     def click_no_answer(self):
         """
         Handler for click event of "no answer" button.
         :return:
         """
+        if self.appstate:
+            self.appstate.mark_no_answer()
+            self.set_layout_for_next_question()
+        else:
+            QMessageBox.about(
+                self,
+                "Error",
+                "You'll need to provide dataset first."
+            )
 
     def load_data(self):
         """
@@ -137,6 +181,21 @@ class MainWindow(QWidget):
                 "All questions have been answered."
             )
 
+            QMessageBox.about(
+                self,
+                "All questions answered.",
+                "You need to provide dataset filename to save."
+            )
+
+            options = QFileDialog.Options()
+            options |= QFileDialog.DontUseNativeDialog
+            filename, _ = QFileDialog.getSaveFileName(
+                self,
+                "QFileDialog.getSaveFileName()", "", "CSV Files (*.csv)",
+                options=options
+            )
+            self.appstate.save_dataset()
+
         except QuestionAnsweredFalsely:
             self.question_text.setText(
                 "You have answered false to one or more questions. "
@@ -151,76 +210,8 @@ class MainWindow(QWidget):
 
         else:
             self.question_text.setText(
-                self.appstate.get_next_question()
+                question
             )
 
-
-class AppState:
-    location = None
-
-    def __init__(self, location):
-        self.file_location = location
-        self._load_data(location)
-
-    def get_next_question(self) -> str:
-        """
-        Returns next question for our candidate.
-
-        :return:
-        """
-
-    def get_chance(self) -> int:
-        """
-        Returns chance of current candidate to fit our profile
-        :return:
-        """
-
-    def get_progress(self) -> int:
-        """
-        Returns current progress
-        :return: progress : int
-        """
-
-    def mark_true(self):
-        """
-        Marks question as answered as True.
-        :return:
-        """
-
-    def mark_false(self):
-        """
-        Marks question as answered as False.
-
-        :return:
-        """
-        pass
-
-    def mark_no_answer(self):
-        """
-        Marks question as unanswered.
-
-        :return: None
-        """
-        pass
-
-    def _save_data(self):
-        """
-        Saves data on finish of the poll
-
-        :return: None
-        """
-        pass
-
-    def _calculate_chance(self) -> int:
-        """
-        Calculates and returns probability of our candidate to fit our profile.
-
-        :return:
-        """
-
-    def _load_data(self, location):
-        """
-        Gets data to provide calculations for questions. Requires CSV file.
-        :param location: path to CSV file
-        :return:
-        """
+            self.pb_questions.setValue(progress)
+            self.pb_suitability.setValue(chance)
