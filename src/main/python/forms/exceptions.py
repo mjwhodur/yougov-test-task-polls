@@ -15,3 +15,8 @@ class QuestionUnanswered(Exception):
     """
         Raised when our candidate did not answer the question.
     """
+
+class ImproperFormatException(Exception):
+    """
+        Raised when our app handles broken file
+    """

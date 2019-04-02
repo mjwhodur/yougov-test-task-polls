@@ -1,3 +1,7 @@
+import csv
+
+from forms.exceptions import ImproperFormatException
+
 
 class AppState:
     location = None
@@ -68,6 +72,14 @@ class AppState:
         :param location: path to CSV file
         :return:
         """
+        try:
+            with open(location) as f:
+                reader = csv.DictReader(f)
+        except csv.Error:
+            raise ImproperFormatException
+        else:
+            pass
+
 
     def save_dataset(self):
         """

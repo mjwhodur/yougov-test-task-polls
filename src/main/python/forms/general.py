@@ -18,7 +18,8 @@ from forms.appstate import AppState
 from forms.exceptions import (
     QuestionsEnded,
     QuestionAnsweredFalsely,
-    QuestionUnanswered
+    QuestionUnanswered,
+    ImproperFormatException
 )
 
 
@@ -104,7 +105,20 @@ class MainWindow(QWidget):
         if filename:
 
             if not self.appstate:
-                self.appstate = AppState(filename)
+                try:
+                    appstate = AppState(filename)
+
+                except ImproperFormatException:
+                    QMessageBox.about(
+                        self,
+                        "Dataset error",
+                        "We have discovered that "
+                        "the dataset format is improper. Use CSV format or"
+                        " check if the file format is proper and try again."
+                    )
+
+                else:
+                    self.appstate = appstate
             else:
 
                 buttonReply = QMessageBox.question(
