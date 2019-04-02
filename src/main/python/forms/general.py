@@ -11,6 +11,8 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QLabel, QPushButton, \
 
 class MainWindow(QWidget):
 
+    appstate = None
+
     def __init__(self, parent=None):
         super().__init__()
         self.interface_builder()
@@ -22,9 +24,16 @@ class MainWindow(QWidget):
         question_text = QLabel("MainWindow.question_text", self)
 
         true_button = QPushButton("True", self)
+        true_button.clicked.connect(self.click_true)
+
         false_button = QPushButton("False", self)
+        false_button.clicked.connect(self.click_false)
+
         wont_answer_button = QPushButton("Won't answer", self)
+        wont_answer_button.clicked.connect(self.click_no_answer)
+
         load_questions_data = QPushButton("Load question data")
+        load_questions_data.clicked.connect(self.click_no_answer)
 
         button_layout = QHBoxLayout()
         button_layout.addWidget(true_button)
@@ -55,14 +64,47 @@ class MainWindow(QWidget):
         )
         self.show()
 
-        def load_questions_data_click():
+    def load_questions_data_click(self):
+        if not self.appstate:
+            self.appstate = AppState()
+        else:
             pass
 
-        def click_true():
-            pass
+    def click_true(self):
+        pass
 
-        def click_false():
-            pass
+    def click_false(self):
+        pass
 
-        def click_no_answer():
-            pass
+    def click_no_answer(self):
+        pass
+
+    def load_data(self):
+        pass
+
+
+class AppState:
+
+    def __init__(self):
+        pass
+
+    def get_next_question(self):
+        pass
+
+    def get_chance(self):
+        pass
+
+    def mark_true(self):
+        pass
+
+    def mark_false(self):
+        pass
+
+    def mark_no_answer(self):
+        pass
+
+    def _save_data(self):
+        pass
+
+    def _calculate_chance(self):
+        pass
