@@ -132,6 +132,8 @@ class MainWindow(QWidget):
                 else:
                     pass
 
+            self.set_layout_for_next_question()
+
     def click_true(self):
         """
         Handler for click event of True button
@@ -190,6 +192,12 @@ class MainWindow(QWidget):
             progress = self.appstate.get_progress()
             question = self.appstate.get_next_question()
 
+            self.question_text.setText(
+                question
+            )
+            self.pb_questions.setValue(progress)
+            self.pb_suitability.setValue(chance)
+
         except QuestionsEnded:
             self.question_text.setText(
                 "All questions have been answered."
@@ -221,11 +229,3 @@ class MainWindow(QWidget):
                 "You have not answered to one or more questions. "
                 "Poll cannot continue."
             )
-
-        else:
-            self.question_text.setText(
-                question
-            )
-
-            self.pb_questions.setValue(progress)
-            self.pb_suitability.setValue(chance)
