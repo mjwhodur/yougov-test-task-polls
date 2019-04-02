@@ -10,11 +10,11 @@ from forms.exceptions import ImproperFormatException, \
 class AppState:
     location = None
 
-    answer_list = None  # type: list
-    answer_set_stats = None  # type: dict
+    answer_list = []  # type: list
+    answer_set_stats = {}  # type: dict
 
     current_question = None  # type: str
-    current_answer_set = None  # type: dict
+    current_answer_set = {} # type: dict
 
     def __init__(self, location):
         self.file_location = location
@@ -104,7 +104,8 @@ class AppState:
 
     def _calculate_stats(self):
         """
-        Calculates stats for provided dataset.
+        Calculates stats for provided dataset and sets initial parameters for
+        current answers set.
 
         :return:
         """
@@ -126,4 +127,4 @@ class AppState:
                     key_count = key_count + 1
 
             self.answer_set_stats[key] = key_count
-
+            self.current_answer_set[key] = "U"
