@@ -3,8 +3,10 @@ from enum import Enum
 
 import numpy as np
 
-from forms.exceptions import ImproperFormatException, \
+from forms.exceptions import (
+    ImproperFormatException,
     InconsistentAppStateException
+)
 
 
 class AppState:
@@ -14,9 +16,11 @@ class AppState:
     answer_set_stats = {}  # type: dict
 
     current_question = None  # type: str
-    current_answer_set = {} # type: dict
+    current_answer_set = {}  # type: dict
 
     def __init__(self, location):
+        self.chance = None
+        self.progress = None
         self.file_location = location
         self._load_data(self.file_location)
 
@@ -26,25 +30,30 @@ class AppState:
 
         :return:
         """
-        return "SASDQASDSD"
+        return self.current_question
 
     def get_chance(self) -> int:
         """
         Returns chance of current candidate to fit our profile
         :return:
         """
+        self._get_chance()
+        return self.chance
 
     def get_progress(self) -> int:
         """
         Returns current progress
         :return: progress : int
         """
+        self._update_progress()
+        return self.progress
 
     def mark_true(self):
         """
         Marks question as answered as True.
         :return:
         """
+        self._mark_true()
 
     def mark_false(self):
         """
@@ -52,7 +61,7 @@ class AppState:
 
         :return:
         """
-        pass
+        self._mark_false()
 
     def mark_no_answer(self):
         """
@@ -60,7 +69,55 @@ class AppState:
 
         :return: None
         """
+        self._mark_no_answer()
+
+    def save_dataset(self):
+        """
+        Handler for saving data with current poll to dataset
+        :return:
+        """
         pass
+
+    def _calculate_stats(self):
+        """
+        Calculates stats for provided dataset and sets initial parameters for
+        current answers set.
+
+        :return:
+        """
+        self.answer_set_stats = {}
+        if not len(self.answer_list) and isinstance(self.answer_list, list):
+            raise InconsistentAppStateException
+
+        if not isinstance(self.answer_list[0], dict):
+            raise InconsistentAppStateException
+
+        keys = self.answer_list[0].keys()
+
+        for key in keys:
+
+            key_count = 0
+
+            for element in self.answer_list:
+                if element.get(key) == "T":
+                    key_count = key_count + 1
+
+            self.answer_set_stats[key] = key_count
+            self.current_answer_set[key] = None
+            self._get_chance()
+            self._update_progress()
+
+    def _update_progress(self):
+        pass
+
+    def _get_chance(self):
+        pass
+
+    def _mark_true(self):
+        """
+        Private method containing logic for marking questions.
+        :return:
+        """
 
     def _save_data(self):
         """
@@ -95,36 +152,19 @@ class AppState:
 
         self._calculate_stats()
 
-    def save_dataset(self):
+    def _mark_false(self):
         """
-        Handler for saving data with current poll to dataset
+        Private method containing logic for marking questions.
         :return:
         """
         pass
 
-    def _calculate_stats(self):
+    def _mark_no_answer(self):
         """
-        Calculates stats for provided dataset and sets initial parameters for
-        current answers set.
-
+        Private method conatining logic for marking questions.
         :return:
         """
-        self.answer_set_stats = {}
-        if not len(self.answer_list) and isinstance(self.answer_list, list):
-            raise InconsistentAppStateException
+        pass
 
-        if not isinstance(self.answer_list[0], dict):
-            raise InconsistentAppStateException
-
-        keys = self.answer_list[0].keys()
-
-        for key in keys:
-
-            key_count = 0
-
-            for element in self.answer_list:
-                if element.get(key) == "T":
-                    key_count = key_count + 1
-
-            self.answer_set_stats[key] = key_count
-            self.current_answer_set[key] = "U"
+    def _set_question(self):
+        pass
