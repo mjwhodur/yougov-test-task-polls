@@ -219,6 +219,11 @@ class MainWindow(QWidget):
             if filename:
                 self.appstate.save_dataset(filename)
 
+            self.question_text.setText(
+                "Poll has ended. "
+                "This poll has ended."
+            )
+
             self.close()
 
         except QuestionAnsweredFalsely:
