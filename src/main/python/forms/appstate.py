@@ -8,7 +8,7 @@ class AppState:
 
     def __init__(self, location):
         self.file_location = location
-        self._load_data(location)
+        self._load_data(self.file_location)
 
     def get_next_question(self) -> str:
         """
