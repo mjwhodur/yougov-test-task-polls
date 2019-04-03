@@ -135,10 +135,11 @@ class AppState:
             self.progress = 0
         else:
             self.progress = (
-                    float(
-                        float(answered_count)
-                        / (len(self.current_answer_set.keys()) - 1))
+                float(
+                    float(answered_count)
+                    / (len(self.current_answer_set.keys()))
                     * 100
+                )
             )
 
     def _mark_true(self):

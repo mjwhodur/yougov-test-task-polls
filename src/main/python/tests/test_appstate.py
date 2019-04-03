@@ -28,18 +28,6 @@ class TestAppState(unittest.TestCase):
             'mock_2': 1
         }
 
-    def test_data_loading_incorrect_file(self):
-        pass
-
-    def test_data_loading(self):
-        pass
-
-    def test_questioning(self):
-        pass
-
-    def test_questioning_answer_not_clicked(self):
-        pass
-
     def test_chance_estimation(self):
         self.assertEqual(
             self.appstate.get_chance(),
@@ -47,25 +35,43 @@ class TestAppState(unittest.TestCase):
         )
 
     def test_progress(self):
+        self.appstate.get_next_question()
         self.assertEqual(
             self.appstate.get_progress(),
             0
         )
         self.appstate.mark_true()
         self.appstate.get_next_question()
+
         self.assertEqual(
             self.appstate.get_progress(),
             50
         )
 
     def test_marking_true(self):
-        pass
+        self.assertRaises(
+            Exception,
+            self.appstate.mark_true()
+        )
 
     def test_marking_false(self):
-        pass
+        self.assertRaises(
+            Exception,
+            self.appstate.mark_false()
+        )
 
     def test_marking_unanswered(self):
-        pass
+        self.assertRaises(
+            Exception,
+            self.appstate.mark_false()
+        )
 
     def test_saving(self):
-        pass
+        self.appstate.mark_false()
+        self.appstate.get_next_question()
+        self.appstate.mark_false()
+        self.assertRaises(
+            Exception,
+            self.appstate.save_dataset('save_mock_data.csv')
+        )
+
