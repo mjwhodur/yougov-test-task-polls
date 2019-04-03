@@ -9,7 +9,7 @@ class AppContext(ApplicationContext):
     def run(self):
         window = MainWindow()
         window.show()
-        return self.app.exec_()  # 3. End run() with this line
+        return self.app.exec_()
 
 
 if __name__ == '__main__':
