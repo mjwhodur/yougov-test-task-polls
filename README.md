@@ -8,16 +8,11 @@ with questions and assesing probability of the user to fit
 control group. 
 
 ## Requirements
-
+It is advised to use `pipenv` for package and virtual environment management purposes.
 ### Building
 
 Windows: **Python 3, pipenv, 
-Microsoft Visual C++ Libraries
-[https://www.microsoft.com/en-us/download/details.aspx?id=30679]
-https://support.microsoft.com/en-us/help/2999226/update-for-universal-c-runtime-in-windows
-https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
-
-**
+Microsoft Visual C++ Libraries**
 
 Linux: **Python 3, build-essentials**
 
@@ -29,3 +24,6 @@ Linux: Possibly, some bindings for Qt may be needed.
 Windows: recent version of Windows
 macOS: recent version of macOS with Gatekeeper exception
 
+### Running and building on Linux and other *NIXes
+
+See the [doc/building_linux.md](doc/building_linux.md) file for more instructions.
