@@ -35,7 +35,7 @@ class MainWindow(QWidget):
 
     def interface_builder(self) -> None:
         """
-        Creates main window interface
+        Creates oldMain window interface
         :return: None
         """
         app_grid = QGridLayout()

@@ -11,7 +11,13 @@ control group.
 
 ### Building
 
-Windows: **Python 3, pipenv, Microsoft Visual C++ Libraries**
+Windows: **Python 3, pipenv, 
+Microsoft Visual C++ Libraries
+[https://www.microsoft.com/en-us/download/details.aspx?id=30679]
+https://support.microsoft.com/en-us/help/2999226/update-for-universal-c-runtime-in-windows
+https://developer.microsoft.com/en-us/windows/downloads/windows-10-sdk
+
+**
 
 Linux: **Python 3, build-essentials**
 
