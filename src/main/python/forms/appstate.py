@@ -134,8 +134,12 @@ class AppState:
         if answered_count == 0:
             self.progress = 0
         else:
-            self.progress = float(float(answered_count) / len(
-                self.current_answer_set.keys())) * 100
+            self.progress = (
+                    float(
+                        float(answered_count)
+                        / (len(self.current_answer_set.keys()) - 1))
+                    * 100
+            )
 
     def _mark_true(self):
         """
@@ -168,8 +172,6 @@ class AppState:
         except IOError:
             pass
 
-
-
     def _calculate_chance(self):
         """
         Calculates and returns probability of our candidate to fit our profile.
@@ -192,6 +194,7 @@ class AppState:
         if not num_keys_unanswered == 0:
             self.chance = int(count_answered_false / (
                     len(self.answer_list) * num_keys_unanswered) * 100)
+
         else:
             self.chance = 100
             self.progress = 100
