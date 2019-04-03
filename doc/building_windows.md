@@ -10,5 +10,5 @@ Please also note, that you shall have Microsoft Visual C++ compiler installed,
 possibly using recent Microsoft Visual Studio with C++ support and CRT support.
 
 After installing all needed requirements, setup the environment according to
-[Building for Ubuntu and other Linux Distributions](building_ubuntu.md) document.
+[Building for Ubuntu and other Linux Distributions](building_linux.md) document.
 
